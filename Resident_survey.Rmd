@@ -165,9 +165,9 @@ plot_32<-barplot(table_32, ylim=c(0,1), col=topo.colors(5), cex.axis=1.5, cex.na
 ```{r}
 
 data %>%
-  group_by(Q595) %>%
-  #summarise(mean_fish_meals = mean(total_fish_meals)) 
-  summarise(total_survey = length(Q595))
+  group_by(state) %>%
+  summarise(mean_fish_meals = mean(total_fish_meals)) 
+  #summarise(total_survey = length(Q595))
 
 ```
 

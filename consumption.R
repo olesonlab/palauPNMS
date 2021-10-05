@@ -1,0 +1,145 @@
+#### Resident Data Consumption Analysis
+
+setwd("C:/Users/Rachel/Google Drive/Palau sanctuary/Surveys/resident/Final data")
+data <- read.csv("C:/Users/Rachel/Google Drive/Palau sanctuary/Surveys/resident/Final data/for_R.csv")
+
+#586 observations before making cuts
+#omit Doramae and Pam's surveys
+data <- data[ which(data$Q20 !='Doramae'),]
+data <- data[ which(data$Q20 !='Doramae '),]
+data <- data[ which(data$Q20 !='Pam'),]
+#now only 366
+
+#exclude surveys based on QA/QC timing criteria
+data <- data[ which(data$valid_8_3min == 1),]
+#now 335
+
+#sum number of meals in two days
+data$total_fish_meals<-data$meals_Y+data$meals_BY
+
+#subsets of data based on urban/rural
+data_U<-data[which(data$urban == "urban"),]
+data_R<-data[which(data$urban == "rural"),]
+data_P<-data[which(data$urban == "peri"),]
+
+par(mfrow=c(1,3))
+hist(data_U$total_fish_meals,breaks=c(0:6), main="urban", xlab="")
+hist(data_R$total_fish_meals,breaks=c(0:6), main="rural", xlab="fish meals in 2 days")
+hist(data_P$total_fish_meals,breaks=c(0:6), main="peri", xlab="")
+
+mean(data_U$total_fish_meals)
+sd(data_U$total_fish_meals)
+mean(data_R$total_fish_meals)
+sd(data_R$total_fish_meals)
+mean(data_P$total_fish_meals)
+sd(data_P$total_fish_meals)
+
+##Types of fish
+par(mfrow=c(1,3))
+all_types_U<-rbind(data_U$Q747,data_U$Q911,data_U$Q934,data_U$Q957,data_U$Q980,data_U$Q1003)
+all_types_U_table<-table(all_types_U)
+all_types_U_table<-prop.table(all_types_U_table)
+barplot(all_types_U_table, beside=TRUE, ylim=c(0,1), main="urban", ylab="proportion")
+
+all_types_R<-rbind(data_R$Q747,data_R$Q911,data_R$Q934,data_R$Q957,data_R$Q980,data_R$Q1003)
+all_types_R_table<-table(all_types_R)
+all_types_R_table<-prop.table(all_types_R_table)
+barplot(all_types_R_table, beside=TRUE, ylim=c(0,1), main="rural",xlab="fish type")
+
+all_types_P<-rbind(data_P$Q747,data_P$Q911,data_P$Q934,data_P$Q957,data_P$Q980,data_P$Q1003)
+all_types_P_table<-table(all_types_P)
+all_types_P_table<-prop.table(all_types_P_table)
+barplot(all_types_P_table, beside=TRUE, ylim=c(0,1), main="peri")
+
+##Sources of fish
+par(mfrow=c(1,3))
+all_sources_U<-rbind(data_U$B_Y_source,data_U$L_Y_source,data_U$D_Y_source,data_U$B_BY_source,data_U$L_BY_source,data_U$D_BY_source)
+all_sources_U_table<-table(all_sources_U)
+all_sources_U_table<-prop.table(all_sources_U_table)
+barplot(all_sources_U_table, beside=TRUE, ylim=c(0,1), main="urban", ylab="proportion")
+
+all_sources_R<-rbind(data_R$B_Y_source,data_R$L_Y_source,data_R$D_Y_source,data_R$B_BY_source,data_R$L_BY_source,data_R$D_BY_source)
+all_sources_R_table<-table(all_sources_R)
+all_sources_R_table<-prop.table(all_sources_R_table)
+barplot(all_sources_R_table, beside=TRUE, ylim=c(0,1), main="rural",xlab="source")
+
+all_sources_P<-rbind(data_P$B_Y_source,data_P$L_Y_source,data_P$D_Y_source,data_P$B_BY_source,data_P$L_BY_source,data_P$D_BY_source)
+all_sources_P_table<-table(all_sources_P)
+all_sources_P_table<-prop.table(all_sources_P_table)
+barplot(all_sources_P_table, beside=TRUE, ylim=c(0,1), main="peri")
+
+
+
+#barplots of fish sources
+all_sources<-rbind(data$B_Y_source,data$L_Y_source,data$D_Y_source,data$B_BY_source,data$L_BY_source,data$D_BY_source)
+all_sources<-factor(all_sources, level=c(1,3,2,4))
+urban<-rep(data$urban,6)
+urban<-factor(urban, levels=c("rural", "peri", "urban"))
+all_sources_table<-table(all_sources,urban)
+all_sources_table<-prop.table(all_sources_table, margin=2)
+barplot(all_sources_table, beside=FALSE, ylim=c(0,1), ylab="proportion of total",xlab="area",col=topo.colors(4), cex.lab=1.5)
+#legend=c("caught","gifted","bought","don't know")
+
+
+#barplots of monthly protein consumption
+data$urban<-factor(data$urban, levels=c("rural", "peri", "urban"))
+data_consumption<-data[,23:31]
+par(mfrow=c(1,1), mar=c(5,4,6,2))
+
+for (i in 1:9){
+  food<-c("pork","beef","tuna","other pelagic","spam","canned tuna","chicken","reef","sanma")
+  data_consumption[,i] <- factor(data_consumption[,i], levels = c("daily","triweekly","weekly","bi_monthly","rarely_never"))
+  table_i<-table(data_consumption[,i],data$urban)
+  table_i<-prop.table(table_i, margin=2)
+  plot_i<-barplot(table_i, ylim=c(0,1), col=topo.colors(5), cex.axis=1.5, cex.names = 1.5,
+                  main=paste(food[i]))
+}
+
+#to get legend for above figures (cut and paste in ppt)
+table_23<-prop.table(table_23, margin=2)
+plot_23<-barplot(table_23, legend=c("daily","triweekly","weekly","bi_monthly","rarely_never"), ylim=c(0,1), col=topo.colors(5), cex.axis=1.5, cex.names = 1.5)
+
+
+#barplots of monthly protein purchases
+data$urban<-factor(data$urban, levels=c("rural", "peri", "urban"))
+data_purchasing<-data[,32:40]
+par(mfrow=c(1,1), mar=c(5,4,6,2))
+
+for (i in 1:9){
+  food<-c("pork","beef","tuna","other pelagic","spam","canned tuna","chicken","reef","sanma")
+  data_purchasing[,i] <- factor(data_purchasing[,i], levels = c("thrice_plus","twice","once","never"))
+  table_i<-table(data_purchasing[,i],data$urban)
+  table_i<-prop.table(table_i, margin=2)
+  plot_i<-barplot(table_i, ylim=c(0,1), col=topo.colors(5), cex.axis=1.5, cex.names = 1.5,
+                  main=paste(food[i]))
+}
+
+#to get legend for above figures (cut and paste in ppt)
+data_purchasing<-data[,32:40]
+data_purchasing[,1] <- factor(data_purchasing[,1], levels = c("thrice_plus","twice","once","never"))
+table_32<-table(data_purchasing[,1],data$urban)
+table_32<-prop.table(table_32, margin=2)
+plot_32<-barplot(table_32, ylim=c(0,1), col=topo.colors(5), cex.axis=1.5, cex.names = 1.5,
+                 legend=c("thrice_plus","twice","once","never"))
+
+###IGNORE
+#Replace which meals with number of meals
+data$meals_Y[data$meals_Y=="1,2"]<-2
+data$meals_Y[data$meals_Y=="1,2,3"]<-3
+data$meals_Y[data$meals_Y=="1,3"]<-2
+data$meals_Y[data$meals_Y=="2"]<-1
+data$meals_Y[data$meals_Y=="2,3"]<-2
+data$meals_Y[data$meals_Y=="3"]<-1
+data$meals_Y<-factor(data$meals_Y)
+data$meals_Y<-as.integer(levels(data$meals_Y))
+
+data$meals_BY[data$meals_BY=="1,2"]<-2
+data$meals_BY[data$meals_BY=="1,2,3"]<-3
+data$meals_BY[data$meals_BY=="1,3"]<-2
+data$meals_BY[data$meals_BY=="2"]<-1
+data$meals_BY[data$meals_BY=="2,3"]<-2
+data$meals_BY[data$meals_BY=="3"]<-1
+data$meals_BY<-factor(data$meals_BY)
+data$meals_BY<-as.numeric(levels(data$meals_BY))
+
+
